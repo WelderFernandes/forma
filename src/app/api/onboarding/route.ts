@@ -13,6 +13,11 @@ const schema = z.object({
   level: z.enum(["beginner", "intermediate", "advanced"]),
   equipment: z.array(z.string()).max(12),
   daysPerWeek: z.coerce.number().int().min(2).max(6),
+  trainingDays: z
+    .array(z.coerce.number().int().min(1).max(7))
+    .min(2)
+    .max(6)
+    .optional(),
   sessionMinutes: z.coerce.number().int().min(10).max(120),
   focusAreas: z.array(z.string()).max(10),
   lowImpact: z.boolean().default(false),

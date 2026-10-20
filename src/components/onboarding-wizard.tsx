@@ -40,6 +40,11 @@ import {
   calculateMacros,
   calculateTdee,
 } from "@/lib/domain/calculators";
+import {
+  WEEKDAYS,
+  fitTrainingDays,
+  formatTrainingDays,
+} from "@/lib/domain/schedule";
 
 /* ───────────────────────────── Tipos e constantes ───────────────────────────── */
 
@@ -54,6 +59,7 @@ type Draft = {
   level: string;
   equipment: string[];
   daysPerWeek: number;
+  trainingDays: number[];
   sessionMinutes: number;
   activity: string;
   focusAreas: string[];
@@ -69,15 +75,16 @@ const INITIAL: Draft = {
   level: "",
   equipment: ["none"],
   daysPerWeek: 3,
+  trainingDays: [1, 3, 5],
   sessionMinutes: 45,
   activity: "",
   focusAreas: [],
   lowImpact: false,
 };
 
-const STORAGE_KEY = "forma.onboarding.v1";
-const RESULT_STEP = 12;
-const QUESTION_COUNT = 11;
+const STORAGE_KEY = "forma.onboarding.v2";
+const RESULT_STEP = 13;
+const QUESTION_COUNT = 12;
 const PLAN_KEYS = new Set<keyof Draft>([
   "goal",
   "level",
@@ -262,17 +269,6 @@ function formatValue(value: number, decimals = 0) {
   });
 }
 
-function trainingDays(days: number) {
-  const map: Record<number, number[]> = {
-    2: [1, 4],
-    3: [1, 3, 5],
-    4: [1, 2, 4, 5],
-    5: [1, 2, 3, 4, 5],
-    6: [1, 2, 3, 4, 5, 6],
-  };
-  return map[days] ?? [1, 3, 5];
-}
-
 /* ───────────────────────────── Componente principal ───────────────────────────── */
 
 export function OnboardingWizard({ name }: { name: string }) {
@@ -385,10 +381,12 @@ export function OnboardingWizard({ name }: { name: string }) {
       case 8:
         return draft.daysPerWeek >= 2 && draft.daysPerWeek <= 6;
       case 9:
-        return draft.sessionMinutes >= 20 && draft.sessionMinutes <= 90;
+        return draft.trainingDays.length === draft.daysPerWeek;
       case 10:
-        return draft.equipment.length > 0;
+        return draft.sessionMinutes >= 20 && draft.sessionMinutes <= 90;
       case 11:
+        return draft.equipment.length > 0;
+      case 12:
         return true;
       default:
         return true;

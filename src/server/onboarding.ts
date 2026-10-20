@@ -10,6 +10,7 @@ import {
 import { generatePlan, type PlanInput } from "@/lib/domain/plan-generator";
 import { resolvePlanSlots } from "@/server/plan";
 import { parseJsonArray } from "@/lib/domain/types";
+import { normalizeTrainingDays } from "@/lib/domain/schedule";
 
 export type OnboardingData = {
   sex: "female" | "male" | "other";
@@ -20,6 +21,7 @@ export type OnboardingData = {
   level: "beginner" | "intermediate" | "advanced";
   equipment: string[];
   daysPerWeek: number;
+  trainingDays?: number[];
   sessionMinutes: number;
   focusAreas: string[];
   lowImpact: boolean;
@@ -67,6 +69,10 @@ export async function applyOnboarding(
     weightKg: data.weightKg,
     goal: data.goal,
   });
+  const trainingDays = normalizeTrainingDays(
+    data.trainingDays,
+    data.daysPerWeek,
+  );
 
   const profileData = {
     onboarded: true,
@@ -79,6 +85,7 @@ export async function applyOnboarding(
     activity: data.activity,
     equipment: toJsonArray(data.equipment),
     daysPerWeek: data.daysPerWeek,
+    trainingDays: JSON.stringify(trainingDays),
     sessionMinutes: data.sessionMinutes,
     focusAreas: toJsonArray(data.focusAreas),
     lowImpact: data.lowImpact,

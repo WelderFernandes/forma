@@ -11,6 +11,7 @@ import {
   calculateMacros,
   calculateTdee,
 } from "@/lib/domain/calculators";
+import { normalizeTrainingDays } from "@/lib/domain/schedule";
 import { applyOnboarding } from "@/server/onboarding";
 
 const onboardingSchema = z.object({
@@ -22,6 +23,10 @@ const onboardingSchema = z.object({
   level: z.enum(["beginner", "intermediate", "advanced"]),
   equipment: z.array(z.string()).max(12),
   daysPerWeek: z.coerce.number().int().min(2).max(6),
+  trainingDays: z
+    .array(z.coerce.number().int().min(1).max(7))
+    .max(7)
+    .optional(),
   sessionMinutes: z.coerce.number().int().min(10).max(120),
   focusAreas: z.array(z.string()).max(10),
   lowImpact: z.boolean().default(false),
@@ -49,6 +54,10 @@ const profileSchema = z.object({
   goal: z.string().optional(),
   level: z.string().optional(),
   daysPerWeek: z.coerce.number().int().min(2).max(6).optional(),
+  trainingDays: z
+    .array(z.coerce.number().int().min(1).max(7))
+    .max(7)
+    .optional(),
   sessionMinutes: z.coerce.number().int().min(10).max(120).optional(),
   equipment: z.array(z.string()).optional(),
   focusAreas: z.array(z.string()).optional(),
@@ -65,6 +74,15 @@ export async function updateProfile(input: z.infer<typeof profileSchema>) {
   const data = profileSchema.parse(input);
 
   const current = await prisma.userProfile.findUnique({ where: { userId } });
+  const nextDaysPerWeek = data.daysPerWeek ?? current?.daysPerWeek ?? 3;
+  const shouldUpdateTrainingDays =
+    data.trainingDays !== undefined || data.daysPerWeek !== undefined;
+  const trainingDays = shouldUpdateTrainingDays
+    ? normalizeTrainingDays(
+        data.trainingDays ?? current?.trainingDays,
+        nextDaysPerWeek,
+      )
+    : null;
 
   // Recalcula as metas nutricionais quando peso/objetivo/atividade mudam.
   let nutritionUpdate: Record<string, number> = {};
@@ -115,6 +133,9 @@ export async function updateProfile(input: z.infer<typeof profileSchema>) {
       ...(data.level !== undefined ? { level: data.level } : {}),
       ...(data.activity !== undefined ? { activity: data.activity } : {}),
       ...(data.daysPerWeek !== undefined ? { daysPerWeek: data.daysPerWeek } : {}),
+      ...(trainingDays
+        ? { trainingDays: JSON.stringify(trainingDays) }
+        : {}),
       ...(data.sessionMinutes !== undefined ? { sessionMinutes: data.sessionMinutes } : {}),
       ...(data.equipment !== undefined ? { equipment: toJsonArray(data.equipment) } : {}),
       ...(data.focusAreas !== undefined ? { focusAreas: toJsonArray(data.focusAreas) } : {}),
@@ -129,6 +150,9 @@ export async function updateProfile(input: z.infer<typeof profileSchema>) {
 
   revalidatePath("/");
   revalidatePath("/configuracoes");
+  revalidatePath("/painel");
+  revalidatePath("/treinos");
+  revalidatePath("/cardio");
   revalidatePath("/nutricao");
   return { ok: true };
 }
