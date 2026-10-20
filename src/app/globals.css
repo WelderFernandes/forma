@@ -1,0 +1,517 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * Forma — Atelier
+ *
+ * Um sistema editorial de performance: tinta verde-escura, osso quente,
+ * citron como assinatura, tipografia serifada de alto contraste e fotografia.
+ *
+ * Camadas:
+ *   1. Ink / bone / citron — identidade
+ *   2. Superfícies e hairlines quentes
+ *   3. Tipografia (Instrument Serif + Inter)
+ *   4. Raio, elevação, grão e movimento
+ * ───────────────────────────────────────────────────────────────────────── */
+
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ─── Cores ─── */
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-warm: var(--surface-warm);
+  --color-foreground: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted);
+  --color-meta: var(--meta);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-ring: var(--ring);
+  --color-input: var(--border);
+  --color-destructive: var(--danger);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-on);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-on);
+  --color-secondary: var(--surface-warm);
+  --color-secondary-foreground: var(--fg-2);
+  --color-popover: var(--bg);
+  --color-popover-foreground: var(--fg);
+  --color-card: var(--bg);
+  --color-card-foreground: var(--fg);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-on);
+  --color-brand-soft: var(--brand-soft);
+  --color-canvas: var(--bg);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-cream: var(--cream);
+  --color-lime: var(--lime);
+  --color-lime-bright: var(--lime-bright);
+  --color-lime-ink: var(--lime-ink);
+  --color-clay: var(--clay);
+  --color-sage: var(--sage);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-fg);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-fg);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ─── Tipografia ─── */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), "Instrument Serif", Georgia, serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+
+  /* ─── Raios ─── */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+
+  /* ─── Sombras ─── */
+  --shadow-ring: var(--elev-ring);
+  --shadow-card: var(--elev-card);
+  --shadow-raised: var(--elev-raised);
+  --shadow-lime: var(--elev-lime);
+  --shadow-focus-ring: var(--focus-ring);
+
+  /* ─── Movimento ─── */
+  --motion-fast: var(--motion-fast);
+  --motion-base: var(--motion-base);
+  --ease-standard: var(--ease-standard);
+}
+
+:root {
+  /* Superfícies — osso quente, papel, areia */
+  --bg: #f4efe3;
+  --surface: #faf6eb;
+  --surface-warm: #ece5d4;
+
+  /* Tinta */
+  --fg: #12160e;
+  --fg-2: #39412f;
+  --muted: #6d7363;
+  --meta: #8b8f7e;
+
+  /* Hairlines */
+  --border: #d9d2bf;
+  --border-soft: #e6dfcd;
+
+  /* Ação primária — tinta com texto osso */
+  --accent: #161c10;
+  --accent-on: #f7f3e7;
+  --accent-hover: #28331d;
+  --accent-active: #0b0f07;
+
+  /* Marca legível sobre osso */
+  --brand: #3a4b29;
+  --brand-on: #f7f3e7;
+  --brand-soft: rgba(180, 210, 74, 0.18);
+
+  /* Assinatura citron */
+  --lime: #d8f65a;
+  --lime-bright: #e7ff85;
+  --lime-ink: #111609;
+  --ink: #0b1008;
+  --ink-2: #131a0e;
+  --cream: #f4efe3;
+  --clay: #c96543;
+  --sage: #8d9d7c;
+
+  /* Sidebar sempre escura */
+  --sidebar: #0b1008;
+  --sidebar-fg: #efeadd;
+  --sidebar-accent: #1a2113;
+  --sidebar-border: rgba(244, 239, 227, 0.1);
+
+  /* Semântica */
+  --success: #4d7a36;
+  --warn: #b07a22;
+  --danger: #b64a33;
+
+  /* Gráficos */
+  --chart-1: #6f8a4b;
+  --chart-2: #c96543;
+  --chart-3: #c2a36a;
+  --chart-4: #8d9d7c;
+  --chart-5: #161c10;
+
+  /* Tipografia */
+  --text-base: 16px;
+  --leading-body: 1.55;
+  --leading-tight: 1.02;
+
+  /* Raios */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-3xl: 48px;
+
+  /* Elevação */
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-card: 0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 18px 40px -32px rgba(17, 22, 12, 0.45);
+  --elev-raised: 0 30px 70px -38px rgba(17, 22, 12, 0.55),
+    0 2px 8px rgba(17, 22, 12, 0.04);
+  --elev-lime: 0 16px 44px -16px rgba(185, 219, 63, 0.55);
+  --focus-ring: 0 0 0 4px color-mix(in oklab, var(--lime) 55%, transparent);
+
+  /* Movimento — desacelera e assenta */
+  --motion-fast: 160ms;
+  --motion-base: 280ms;
+  --motion-slow: 560ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Layout */
+  --container-max: 1240px;
+}
+
+.dark {
+  --bg: #0a0e08;
+  --surface: #11160d;
+  --surface-warm: #171e12;
+
+  --fg: #f3efe2;
+  --fg-2: #c9cdbb;
+  --muted: #929883;
+  --meta: #767c6a;
+
+  --border: #283021;
+  --border-soft: #1d2517;
+
+  --accent: #d8f65a;
+  --accent-on: #111609;
+  --accent-hover: #e7ff85;
+  --accent-active: #c5e343;
+
+  --brand: #d8f65a;
+  --brand-on: #111609;
+  --brand-soft: rgba(216, 246, 90, 0.14);
+
+  --sidebar: #070b05;
+  --sidebar-fg: #efeadd;
+  --sidebar-accent: #171e12;
+  --sidebar-border: rgba(244, 239, 227, 0.08);
+
+  --success: #9bcf74;
+  --warn: #f0bc5e;
+  --danger: #ff8264;
+
+  --chart-1: #d8f65a;
+  --chart-2: #e08a68;
+  --chart-3: #d7ba7f;
+  --chart-4: #a9bb96;
+  --chart-5: #f3efe2;
+
+  --elev-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 24px 60px -36px rgba(0, 0, 0, 0.8);
+  --elev-raised: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-base);
+    line-height: var(--leading-body);
+    font-weight: 400;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--muted) 35%, transparent);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+/* ───────────── Tipografia editorial ───────────── */
+
+.font-display {
+  font-family: var(--font-instrument), "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.display-hero {
+  font-family: var(--font-instrument), "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.025em;
+}
+
+.display-section {
+  font-family: var(--font-instrument), "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.eyebrow-muted {
+  color: var(--muted);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ───────────── Atmosfera ───────────── */
+
+.grain {
+  position: relative;
+  isolation: isolate;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+.photo-warm {
+  filter: saturate(0.72) contrast(1.05) sepia(0.12);
+}
+
+.duotone {
+  position: relative;
+}
+.duotone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(160deg, rgba(216, 246, 90, 0.1), transparent 45%),
+    linear-gradient(0deg, rgba(11, 16, 8, 0.72), transparent 62%);
+}
+
+.glass-dark {
+  background: rgba(11, 16, 8, 0.62);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+.hairline {
+  border-color: color-mix(in oklab, var(--fg) 12%, transparent);
+}
+
+.rule {
+  height: 1px;
+  background: color-mix(in oklab, var(--fg) 12%, transparent);
+}
+
+.ring-hairline {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 10%, transparent);
+}
+
+.lift {
+  transition: transform var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard);
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--elev-raised);
+}
+
+.image-zoom img {
+  transition: transform 1.2s var(--ease-standard);
+}
+.image-zoom:hover img {
+  transform: scale(1.045);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+/* ───────────── Movimento ───────────── */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise-in var(--motion-slow) var(--ease-standard) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade {
+  animation: fade-in var(--motion-base) var(--ease-standard) both;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-step {
+  animation: step-in 420ms var(--ease-standard) both;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-scale-in {
+  animation: scale-in var(--motion-base) var(--ease-standard) both;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 3.2s linear infinite;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

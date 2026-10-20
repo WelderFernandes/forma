@@ -1,0 +1,468 @@
+// Forma — schema Prisma (SQLite)
+// Nota: SQLite não suporta enums nem listas nativas. Arrays são persistidos
+// como JSON (string) e validados no layer de aplicação (src/lib/domain/types.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Better Auth ─────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  profile         UserProfile?
+  templates       WorkoutTemplate[]
+  sessionsWorkout WorkoutSession[]
+  favorites       Favorite[]
+  bodyMetrics     BodyMetric[]
+  mealEntries     MealEntry[]
+  waterLogs       WaterLog[]
+  stepLogs        StepLog[]
+  fastingSessions FastingSession[]
+  userChallenges  UserChallenge[]
+  achievements    UserAchievement[]
+  readTips        TipRead[]
+  cycleLogs       CycleLog[]
+  cardioSessions  CardioSession[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ───────────────────────────── Perfil / Onboarding ─────────────────────────────
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  onboarded Boolean  @default(false)
+
+  sex           String?
+  birthDate     DateTime?
+  heightCm      Float?
+  weightKg      Float?
+  goal          String?
+  level         String?
+  activity      String   @default("moderate")
+  equipment      String  @default("[]")
+  daysPerWeek   Int      @default(3)
+  // Agenda semanal em JSON: 1 = segunda ... 7 = domingo.
+  trainingDays  String   @default("[1,3,5]")
+  sessionMinutes Int     @default(30)
+  focusAreas    String   @default("[]")
+  lowImpact     Boolean  @default(false)
+  cycleTracking Boolean  @default(false)
+
+  // Nutrição
+  targetCalories Int?
+  targetProtein  Int?
+  targetCarbs    Int?
+  targetFat      Int?
+  waterTargetMl  Int      @default(2000)
+  stepTarget     Int      @default(8000)
+  fastingEnabled Boolean  @default(false)
+  fastingHours   Int      @default(16)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────────── Biblioteca de exercícios ─────────────────────────────
+
+model Exercise {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  category        String
+  primaryMuscle   String
+  secondaryMuscles String  @default("[]")
+  equipment       String   @default("none")
+  difficulty      String   @default("beginner")
+  impact          String   @default("low")
+  instructions    String   @default("[]")
+  tips            String   @default("[]")
+  commonMistakes  String   @default("[]")
+  breathing       String?
+  videoUrl        String?
+  caloriesPerMinute Float?
+  // Integração oficial MuscleWiki: metadados e URLs de streaming (não os vídeos).
+  muscleWikiId       Int?
+  muscleWikiName     String?
+  muscleWikiVideos   String?
+  muscleWikiSyncedAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  templateItems   TemplateExercise[]
+  sessionItems    WorkoutExercise[]
+  favorites       Favorite[]
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, exerciseId])
+}
+
+// ───────────────────────────── Fichas de treino ─────────────────────────────
+
+model WorkoutTemplate {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  split       String   @default("full_body")
+  goal        String?
+  level       String?
+  equipment   String   @default("[]")
+  daysPerWeek Int?
+  estMinutes  Int      @default(35)
+  tags        String   @default("[]")
+  isSystem    Boolean  @default(false)
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items    TemplateExercise[]
+  sessions WorkoutSession[]
+}
+
+model TemplateExercise {
+  id          String         @id @default(cuid())
+  templateId  String
+  template    WorkoutTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exerciseId  String
+  exercise    Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  order       Int
+  sets        Int            @default(3)
+  reps        String         @default("12")
+  restSeconds Int            @default(60)
+  rpe         Int?
+  tempo       String?
+  notes       String?
+  supersetGroup String?
+
+  @@index([templateId, order])
+}
+
+// ───────────────────────────── Sessões de treino ─────────────────────────────
+
+model WorkoutSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId  String?
+  template    WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  name        String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  durationSeconds Int?
+  notes       String?
+  bodyweightKg Float?
+  status      String    @default("in_progress")
+
+  items WorkoutExercise[]
+
+  @@index([userId, startedAt])
+}
+
+model WorkoutExercise {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  order      Int
+  notes      String?
+
+  sets SetLog[]
+}
+
+model SetLog {
+  id               String         @id @default(cuid())
+  workoutExerciseId String
+  workoutExercise  WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+  order            Int
+  weightKg         Float?
+  reps             Int?
+  durationSeconds  Int?
+  rpe              Int?
+  completed        Boolean        @default(true)
+  isWarmup         Boolean        @default(false)
+  isPr             Boolean        @default(false)
+}
+
+// ───────────────────────────── Cardio ao ar livre ─────────────────────────────
+
+model CardioSession {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime
+  activity        String    @default("walk")
+  durationMinutes Int
+  intensity       String    @default("moderate")
+  distanceKm      Float?
+  notes           String?
+  status          String    @default("planned")
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, status])
+}
+
+// ───────────────────────────── Corpo e medidas ─────────────────────────────
+
+model BodyMetric {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  weightKg  Float?
+  bodyFatPct Float?
+  chestCm   Float?
+  waistCm   Float?
+  hipCm     Float?
+  armCm     Float?
+  thighCm   Float?
+  notes     String?
+
+  @@unique([userId, date])
+}
+
+// ───────────────────────────── Nutrição ─────────────────────────────
+
+model Food {
+  id        String @id @default(cuid())
+  slug      String @unique
+  name      String
+  serving   String
+  calories  Int
+  protein   Float
+  carbs     Float
+  fat       Float
+  category  String
+}
+
+model MealEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  meal      String
+  foodId    String?
+  name      String
+  serving   String?
+  calories  Int
+  protein   Float
+  carbs     Float
+  fat       Float
+
+  @@index([userId, date])
+}
+
+model WaterLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  amountMl  Int
+}
+
+model StepLog {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime
+  steps  Int
+
+  @@unique([userId, date])
+}
+
+model FastingSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  targetHours Int       @default(16)
+  status      String    @default("active")
+}
+
+model MealPlan {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       String
+  subtitle    String
+  description String
+  diet        String
+  calories    Int
+  protein     Int
+  carbs       Int
+  fat         Int
+  tags        String @default("[]")
+  meals       String @default("[]")
+}
+
+model Recipe {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       String
+  description String
+  meal        String
+  diet        String
+  prepMinutes Int
+  servings    Int
+  calories    Int
+  protein     Float
+  carbs       Float
+  fat         Float
+  ingredients String @default("[]")
+  steps       String @default("[]")
+  tags        String @default("[]")
+}
+
+// ───────────────────────────── Bem-estar mental / desafios ─────────────────────────────
+
+model MindTip {
+  id        String @id @default(cuid())
+  slug      String @unique
+  title     String
+  category  String
+  body      String
+  takeaway  String
+  readTime  Int    @default(2)
+
+  reads TipRead[]
+}
+
+model TipRead {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tipId  String
+  tip    MindTip  @relation(fields: [tipId], references: [id], onDelete: Cascade)
+  readAt DateTime @default(now())
+
+  @@unique([userId, tipId])
+}
+
+model Challenge {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       String
+  description String
+  category    String
+  days        Int
+  xp          Int
+  icon        String
+  color       String
+  createdAt   DateTime @default(now())
+
+  users UserChallenge[]
+}
+
+model UserChallenge {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  currentDay  Int       @default(0)
+  streak      Int       @default(0)
+
+  @@unique([userId, challengeId])
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  slug        String @unique
+  title       String
+  description String
+  icon        String
+  xp          Int
+  category    String
+
+  users UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model CycleLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime?
+  flow      String?
+  symptoms String   @default("[]")
+  notes     String?
+}
