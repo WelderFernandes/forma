@@ -1,6 +1,11 @@
-import { Dumbbell, WifiOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import type { Metadata } from "next";
+import { WifiOff } from "lucide-react";
+import { OfflineRetry } from "@/components/offline-retry";
+
+export const metadata: Metadata = {
+  title: "Offline",
+  robots: { index: false, follow: false },
+};
 
 export default function OfflinePage() {
   return (
@@ -13,16 +18,14 @@ export default function OfflinePage() {
           Você está offline
         </h1>
         <p className="max-w-sm text-sm text-muted-foreground">
-          O Forma guarda suas fichas e a biblioteca de exercícios no dispositivo.
-          Assim que a conexão voltar, tudo sincroniza de novo.
+          O Forma precisa de conexão para carregar seus treinos e dados.
+          Verifique sua internet e tente novamente.
         </p>
       </div>
-      <Button asChild variant="brand">
-        <Link href="/painel">
-          <Dumbbell className="size-4" />
-          Ir para o painel
-        </Link>
-      </Button>
+      <OfflineRetry />
+      <p className="text-xs text-muted-foreground/70">
+        Seus dados continuam salvos no servidor.
+      </p>
     </div>
   );
 }

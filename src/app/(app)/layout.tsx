@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { InstallAppProvider } from "@/components/pwa/install-app-provider";
 import { getCurrentUser } from "@/server/auth-helpers";
 import { currentStreak } from "@/lib/domain/insights";
 
@@ -37,11 +38,13 @@ export default async function AppLayout({
   );
 
   return (
-    <AppShell
-      user={{ name: user.name, email: user.email }}
-      streak={streak}
-    >
-      {children}
-    </AppShell>
+    <InstallAppProvider>
+      <AppShell
+        user={{ name: user.name, email: user.email }}
+        streak={streak}
+      >
+        {children}
+      </AppShell>
+    </InstallAppProvider>
   );
 }

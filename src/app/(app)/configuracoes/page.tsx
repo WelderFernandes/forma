@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/server/auth-helpers";
 import { getProfile } from "@/server/queries";
 import { ProfileForm } from "@/components/configuracoes/profile-form";
 import { SignOutButton } from "@/components/configuracoes/sign-out-button";
+import { InstallAppSettingsCard } from "@/components/pwa/install-app-card";
 import { normalizeTrainingDays } from "@/lib/domain/schedule";
 import type { ActivityLevel } from "@/lib/domain/types";
 
@@ -123,6 +124,8 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <InstallAppSettingsCard />
 
       {/* Sobre */}
       <Card>

@@ -28,10 +28,40 @@ export const metadata: Metadata = {
     "Um plano de treino desenhado para a sua vida: onboarding inteligente, fichas editáveis, execução explicada, nutrição e progresso em um só lugar.",
   applicationName: "Forma",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      {
+        url: "/icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+      {
+        url: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+      },
+    ],
+    apple: [
+      {
+        url: "/icons/apple-touch-icon-180.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+    shortcut: "/favicon.ico",
+  },
   appleWebApp: {
     capable: true,
     title: "Forma",
     statusBarStyle: "black-translucent",
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
   },
   formatDetection: { telephone: false },
 };

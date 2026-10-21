@@ -89,7 +89,7 @@ export function AppShell({
             onClick={() => setMobileOpen(false)}
             aria-label="Fechar menu"
           />
-          <aside className="animate-scale-in absolute inset-y-0 left-0 w-[86%] max-w-sm overflow-y-auto border-r border-white/10 bg-ink px-4 pb-8 pt-5 text-cream shadow-2xl">
+          <aside className="safe-top-drawer animate-scale-in absolute inset-y-0 left-0 w-[86%] max-w-sm overflow-y-auto border-r border-white/10 bg-ink px-4 pb-8 text-cream shadow-2xl">
             <div className="mb-8 flex items-center justify-between px-2">
               <Logo tone="light" />
               <Button
@@ -109,7 +109,7 @@ export function AppShell({
 
       <div className="flex min-w-0 flex-col">
         {/* Header fosco */}
-        <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl">
+        <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl">
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
             <Button
               variant="ghost"

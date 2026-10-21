@@ -401,6 +401,14 @@
   display: none;
 }
 
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+.safe-top-drawer {
+  padding-top: max(env(safe-area-inset-top), 1.25rem);
+}
+
 .safe-bottom {
   padding-bottom: max(env(safe-area-inset-bottom), 0px);
 }

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InstallAppBanner } from "@/components/pwa/install-app-card";
 import {
   Card,
   CardContent,
@@ -244,6 +245,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-7">
+      <InstallAppBanner />
+
       {/* Cabeçalho editorial */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

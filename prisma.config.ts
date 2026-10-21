@@ -13,7 +13,4 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   ...(directUrl ? { datasource: { url: directUrl } } : {}),
-  datasource: {
-    url: process.env.DATABASE_URL,
-  },
 });

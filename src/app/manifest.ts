@@ -6,14 +6,36 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Forma",
     description:
       "Planos de treino sob medida, dicas de execução, acompanhamento de progresso e ferramentas de nutrição.",
+    id: "/",
+    scope: "/",
     start_url: "/painel",
     display: "standalone",
     orientation: "portrait-primary",
     background_color: "#111310",
     theme_color: "#111310",
     lang: "pt-BR",
+    dir: "ltr",
     categories: ["health", "fitness", "lifestyle"],
+    prefer_related_applications: false,
     icons: [
+      {
+        src: "/icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
       {
         src: "/icon.svg",
         sizes: "any",
