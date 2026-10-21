@@ -24,6 +24,9 @@
     "db:musclewiki": "tsx --env-file=.env scripts/sync-musclewiki.ts",
     "smoke": "node scripts/smoke.mjs"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "@hookform/resolvers": "3.10.0",
     "@prisma/adapter-pg": "7.10.1",
