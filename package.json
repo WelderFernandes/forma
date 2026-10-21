@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.34.7",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma migrate deploy && prisma generate && prisma db seed && next build",
+    "build": "prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "prisma generate && tsc --noEmit",
