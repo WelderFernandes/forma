@@ -44,7 +44,7 @@ funcionando igual no celular e no desktop.
 
 ## Rodando localmente
 
-Pré-requisitos: **Node 24 LTS** (o Prisma 7 exige 20.19+, 22.12+ ou 24+), **pnpm 10+** e **Docker** (ou um PostgreSQL 15+ próprio).
+Pré-requisitos: **Node 24 LTS** (o Prisma 7 exige 20.19+, 22.12+ ou 24+), **pnpm 10.34.7** (fixado em `packageManager`, via Corepack) e **Docker** (ou um PostgreSQL 15+ próprio).
 
 ```bash
 pnpm install
@@ -118,6 +118,14 @@ O import exige destino vazio (ou `--force`) e copia usuários, treinos e demais 
 1. Configure `DATABASE_URL`, `DIRECT_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` e `NEXT_PUBLIC_APP_URL` no ambiente.
 2. Rode `pnpm db:deploy` na etapa de release (com a URL direta).
 3. Rode `pnpm build` e sirva com `pnpm start` ou pela plataforma escolhida.
+
+O repositório fixa **Node 24** e **pnpm 10.34.7** em `package.json`. Em ambientes Nixpacks 1.41+ isso seleciona `nodejs_24` e `pnpm-10_x`. O build não precisa de credenciais de banco; `DATABASE_URL` é necessária em runtime e `DIRECT_URL` apenas para migrations/seed.
+
+Em um banco compartilhado, crie o schema uma única vez antes da primeira migration:
+
+```bash
+psql "$DIRECT_URL" -c 'CREATE SCHEMA IF NOT EXISTS forma;'
+```
 
 ### Vídeos de exercícios (MuscleWiki)
 
