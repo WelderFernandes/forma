@@ -1,5 +1,5 @@
 import "server-only";
-import type { Exercise } from "@prisma/client";
+import type { Exercise } from "@/generated/prisma/client";
 import {
   MUSCLEWIKI_METADATA_TTL_MS,
   getMuscleWikiMediaToken,

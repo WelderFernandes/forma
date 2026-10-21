@@ -19,7 +19,7 @@ export async function getExercises(options?: {
   if (options?.category) where.category = options.category;
   if (options?.difficulty) where.difficulty = options.difficulty;
   if (options?.search) {
-    where.name = { contains: options.search };
+    where.name = { contains: options.search, mode: "insensitive" };
   }
 
   const rows = await prisma.exercise.findMany({

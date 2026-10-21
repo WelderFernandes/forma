@@ -35,7 +35,7 @@ funcionando igual no celular e no desktop.
 
 - **Next.js 15.4.8** (App Router, React 19, Turbopack)
 - **TypeScript** estrito + **Tailwind CSS v4**
-- **Prisma 6** + SQLite (trocar para Postgres é só mudar o `datasource` e o adapter)
+- **Prisma ORM 7** + **PostgreSQL 17** (driver adapter `@prisma/adapter-pg`, migrations versionadas)
 - **Better Auth 1.6** com `prismaAdapter`
 - **Radix UI** (primitivos acessíveis), **lucide-react**, **motion**, **sonner**, **next-themes**
 - Gráficos em **SVG próprio** (`src/components/charts`) — sem dependência extra, controle total do visual
@@ -44,32 +44,39 @@ funcionando igual no celular e no desktop.
 
 ## Rodando localmente
 
-Pré-requisitos: **Node 20+** e **pnpm 10+**.
+Pré-requisitos: **Node 24 LTS** (o Prisma 7 exige 20.19+, 22.12+ ou 24+), **pnpm 10+** e **Docker** (ou um PostgreSQL 15+ próprio).
 
 ```bash
 pnpm install
 
-# Cria o banco SQLite a partir do schema
-pnpm exec prisma db push
+# 1. Configure o ambiente
+cp .env.example .env        # Windows: Copy-Item .env.example .env
 
-# Popula exercícios, fichas, alimentos, receitas, dicas, desafios e conquistas
+# 2. Suba o Postgres local (porta 5433)
+pnpm db:up
+
+# 3. Aplique as migrations e gere o Prisma Client
+pnpm db:deploy
+
+# 4. Popule o conteúdo base (somente em banco vazio)
 pnpm db:seed
 
 pnpm dev
 ```
 
-Acesse `http://localhost:3000`.
+Acesse `http://localhost:3000`. O `db:seed` não sobrescreve um banco já populado. Para um ambiente descartável, use `pnpm db:seed:reset` ou `pnpm db:reset`.
 
 ### Variáveis de ambiente
 
-`.env` já vem pronto para desenvolvimento. Para gerar um segredo novo:
+`.env.example` traz valores seguros para desenvolvimento. Para gerar um segredo novo:
 
 ```bash
-node -e "console.log(require('crypto').randomUUID().replace(/-/g,'')+require('crypto').randomUUID().replace(/-/g,''))"
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://forma:...@localhost:5433/forma?schema=public"
+DIRECT_URL="postgresql://forma:...@localhost:5433/forma?schema=public"
 BETTER_AUTH_SECRET="<64 caracteres aleatórios>"
 BETTER_AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -77,6 +84,40 @@ MUSCLEWIKI_API_KEY=""
 MUSCLEWIKI_BASE_URL="https://api.musclewiki.com"
 EXERCISEDB_FREE_ENABLED="false"
 ```
+
+- `DATABASE_URL` é usada pelo app em runtime, com pool do `pg`.
+- `DIRECT_URL` é usada pelo Prisma CLI (migrations, seed e Studio). Em provedores com pooler, aponte-a para a conexão direta; localmente é igual à `DATABASE_URL`.
+- Em um banco compartilhado, use `?schema=forma` nas duas URLs. Nunca rode migrations no schema `public` de outro projeto.
+- `DATABASE_POOL_MAX` é opcional e limita o pool por processo (padrão: 10).
+
+### Migrations e banco
+
+```bash
+pnpm db:migrate   # desenvolvimento: cria migration + gera client
+pnpm db:deploy    # produção: aplica migrations pendentes + gera client
+pnpm db:status    # confere o estado
+pnpm db:studio    # Prisma Studio
+```
+
+`db:push` existe apenas para prototipagem. Em produção, sempre versione e aplique migrations. O client gerado fica em `src/generated/prisma` e não é versionado; os comandos de build, typecheck e deploy o recriam.
+
+### Importando dados do SQLite antigo
+
+Se você tem um snapshot `prisma/dev.db` da versão anterior:
+
+```bash
+pnpm db:import:sqlite
+# substitui tudo no destino; use apenas em banco descartável:
+pnpm db:import:sqlite -- --force
+```
+
+O import exige destino vazio (ou `--force`) e copia usuários, treinos e demais registros. Ele é uma ferramenta pontual; o Postgres é o banco principal.
+
+### Deploy
+
+1. Configure `DATABASE_URL`, `DIRECT_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` e `NEXT_PUBLIC_APP_URL` no ambiente.
+2. Rode `pnpm db:deploy` na etapa de release (com a URL direta).
+3. Rode `pnpm build` e sirva com `pnpm start` ou pela plataforma escolhida.
 
 ### Vídeos de exercícios (MuscleWiki)
 
@@ -136,10 +177,19 @@ textual continuam funcionando. Os créditos completos, IDs e links estão em
 | `pnpm start` | Sobe o build de produção |
 | `pnpm typecheck` | `prisma generate` + `tsc --noEmit` |
 | `pnpm lint` | ESLint |
-| `pnpm db:push` | Sincroniza o schema com o banco |
-| `pnpm db:seed` | Repovoa o banco (apaga tudo antes) |
+| `pnpm db:up` / `db:down` | Sobe/para o PostgreSQL local do `compose.yaml` |
+| `pnpm db:generate` | Gera o Prisma Client em `src/generated/prisma` |
+| `pnpm db:migrate` | Cria e aplica uma migration em desenvolvimento |
+| `pnpm db:deploy` | Aplica migrations pendentes (produção) e gera o client |
+| `pnpm db:status` | Mostra o estado das migrations |
+| `pnpm db:push` | Sincroniza o schema sem migration (apenas prototipagem) |
+| `pnpm db:seed` | Popula exercícios, fichas, alimentos, receitas, dicas, desafios e conquistas em banco vazio |
+| `pnpm db:seed:reset` | Recria o conteúdo base em um banco descartável |
+| `pnpm db:reset` | Recria o schema, aplica migrations e repovoa |
+| `pnpm db:import:sqlite` | Importa o snapshot SQLite legado para o Postgres |
 | `pnpm db:musclewiki` | Sincroniza os vídeos oficiais da MuscleWiki |
 | `pnpm db:studio` | Prisma Studio |
+| `pnpm smoke` | Smoke test end-to-end contra `http://localhost:3000` |
 
 ---
 
@@ -170,20 +220,32 @@ src/
     exercise-media.ts                   # prioridade MuscleWiki → Your Move → ExerciseDB
     actions/                            # server actions (treino, perfil, nutrição, plano)
     plan.ts, achievements.ts
+  generated/prisma/                     # Prisma Client gerado (fora do Git)
 public/
   demos/ymove/                          # vídeos MP4 + posters locais
   demos/exercisedb/                     # animações GIF locais
 prisma/
   schema.prisma
+  migrations/                           # migrations versionadas para deploy
   data/                                 # conteúdo do seed (exercícios, receitas, dicas…)
   seed.ts
+scripts/
+  migrate-sqlite-to-postgres.mjs       # ETL pontual do banco legado
+  smoke.mjs                             # verificação end-to-end
+compose.yaml                            # PostgreSQL 17 local
+prisma.config.ts                        # datasource do CLI, migrations e seed
 ```
 
 ### Decisões de arquitetura
 
-- **SQLite + JSON**: o SQLite não suporta enums nem listas, então arrays são gravados
-  como JSON e validados em `src/lib/domain/types.ts`. Migrar para Postgres exige trocar
-  o `datasource` e trocar os campos JSON por colunas arrays.
+- **PostgreSQL + JSON em texto**: arrays e estruturas compostas continuam gravados como
+  JSON em colunas textuais e validados em `src/lib/domain/types.ts`. Isso evita uma
+  reescrita invasiva do domínio sem perder transações, foreign keys e a busca
+  case-insensitive do Postgres.
+- **Prisma 7 com driver adapter**: o runtime usa `@prisma/adapter-pg` sobre um pool do
+  `pg`; o CLI lê `DIRECT_URL` em `prisma.config.ts` para aplicar migrations e rodar o
+  seed. O schema pode viver em um schema isolado (por exemplo, `forma`) via
+  `?schema=forma` nas URLs.
 - **Coach determinístico**: as recomendações vêm de regras documentadas em
   `src/lib/domain/insights.ts`, não de um LLM. Isso mantém o app rápido, auditável e
   funcionando offline — e a explicação é sempre rastreável à métrica que a originou.

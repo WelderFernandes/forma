@@ -1,5 +1,5 @@
 import "server-only";
-import type { Exercise } from "@prisma/client";
+import type { Exercise } from "@/generated/prisma/client";
 import {
   EXERCISEDB_DEMOS,
   YMOVE_DEMOS,

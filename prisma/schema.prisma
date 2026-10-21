@@ -1,14 +1,15 @@
-// Forma — schema Prisma (SQLite)
-// Nota: SQLite não suporta enums nem listas nativas. Arrays são persistidos
-// como JSON (string) e validados no layer de aplicação (src/lib/domain/types.ts).
+// Forma — schema Prisma (PostgreSQL)
+// Arrays e estruturas compostas continuam persistidos como JSON em colunas
+// textuais para manter o domínio portátil e validado em src/lib/domain/types.ts.
+// A evolução do schema usa migrations versionadas em prisma/migrations.
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
 }
 
 // ───────────────────────────── Better Auth ─────────────────────────────

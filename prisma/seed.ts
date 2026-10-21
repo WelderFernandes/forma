@@ -1,15 +1,24 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import { EXERCISES_A } from "./data/exercises-a";
 import { EXERCISES_B, EXERCISES_B_EXTRAS } from "./data/exercises-b";
 import { FOODS, MEAL_PLANS, RECIPES } from "./data/nutrition";
 import { ACHIEVEMENTS, CHALLENGES, MIND_TIPS } from "./data/wellbeing";
 import { TEMPLATES } from "./data/templates";
 
-const prisma = new PrismaClient();
-
 async function main() {
+  const [userCount, exerciseCount] = await Promise.all([
+    prisma.user.count(),
+    prisma.exercise.count(),
+  ]);
+
+  if ((userCount > 0 || exerciseCount > 0) && !process.argv.includes("--reset")) {
+    throw new Error(
+      "O banco já contém dados. Use `pnpm db:seed:reset` apenas em desenvolvimento ou um banco descartável.",
+    );
+  }
+
   console.log("→ Limpando banco...");
-  // Ordem inversa das dependências (SQLite sem cascade por padrão no deleteMany)
+  // Ordem inversa das dependências para um reset determinístico.
   await prisma.tipRead.deleteMany();
   await prisma.userChallenge.deleteMany();
   await prisma.userAchievement.deleteMany();

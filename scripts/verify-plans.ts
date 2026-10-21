@@ -6,12 +6,10 @@
  *
  * Uso: pnpm exec tsx scripts/verify-plans.ts
  */
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import { generatePlan } from "../src/lib/domain/plan-generator";
 import { resolvePlanSlots } from "../src/server/plan";
 import type { Equipment, Level } from "../src/lib/domain/types";
-
-const prisma = new PrismaClient();
 
 const GOALS = [
   "lose_weight",

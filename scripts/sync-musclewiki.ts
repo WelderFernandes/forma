@@ -11,7 +11,7 @@
  * apenas IDs, nomes e URLs oficiais de streaming por até 30 dias.
  */
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import {
   MUSCLEWIKI_METADATA_TTL_MS,
   isMuscleWikiConfigured,
@@ -30,7 +30,6 @@ try {
   // O arquivo .env pode não existir; as variáveis do shell continuam válidas.
 }
 
-const prisma = new PrismaClient();
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
 const force = args.includes("--force");

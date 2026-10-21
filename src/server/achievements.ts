@@ -114,7 +114,7 @@ export async function syncAchievements(userId: string): Promise<string[]> {
   );
 
   if (toUnlock.length > 0) {
-    // SQLite não suporta skipDuplicates no createMany — filtramos antes.
+    // Filtramos antes para manter a operação idempotente e portátil.
     await prisma.userAchievement.createMany({
       data: toUnlock.map((a) => ({ userId, achievementId: a.id })),
     });

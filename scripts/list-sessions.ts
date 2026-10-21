@@ -1,7 +1,5 @@
 /** Lista as sessões de treino e seus estados (diagnóstico). */
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../src/lib/prisma";
 
 async function main() {
   const sessions = await prisma.workoutSession.findMany({
