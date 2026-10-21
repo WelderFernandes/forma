@@ -13,8 +13,10 @@ funcionando igual no celular e no desktop.
 | Módulo | O que faz |
 |---|---|
 | **Autenticação** | Better Auth (e-mail + senha), sessão persistida, rotas protegidas |
-| **Onboarding** | Questionário de 11 etapas que gera um plano de treino montado |
+| **Onboarding** | Questionário de 12 etapas que gera um plano de treino montado e a agenda semanal |
 | **Fichas de treino** | CRUD completo, templates do sistema, superséries, RPE, tempo e descanso |
+| **Agenda** | Escolha dos dias da semana com base na frequência semanal |
+| **Cardio ao ar livre** | Caminhada, corrida, trilha e pedal em agenda própria, inclusive nos dias de descanso |
 | **Treino ao vivo** | Log de séries (kg/reps/RPE), cronômetro de descanso, PR automático, guia de execução embutido |
 | **Biblioteca** | 68 exercícios com passo a passo, dicas de execução, erros comuns, respiração e demonstrações em vídeo/animação |
 | **Progresso** | Volume semanal, 1RM estimado por exercício, PRs, equilíbrio muscular, adesão, consistência |
@@ -150,6 +152,7 @@ src/
     (app)/painel                        # dashboard + coach
     (app)/treinos, /treinos/[id], /treinos/novo
     (app)/treino/[sessionId]            # treino ao vivo
+    (app)/cardio                        # agenda de caminhada, corrida e pedal
     (app)/exercicios, /exercicios/[slug]
     (app)/progresso, /corpo, /nutricao, /calculadoras
     (app)/desafios, /mentalidade, /configuracoes
@@ -186,6 +189,11 @@ prisma/
   funcionando offline — e a explicação é sempre rastreável à métrica que a originou.
 - **Servidor-first**: páginas são Server Components; interatividade só onde precisa.
   As mutações são Server Actions com validação Zod.
+- **Agenda semanal**: o perfil guarda dias ISO (1 = segunda … 7 = domingo) em JSON. O
+  mesmo campo alimenta o painel, a página de treinos, o cardio e as configurações.
+- **Cardio separado do treino de força**: registros de cardio têm data, atividade,
+  duração, intensidade, distância opcional e status. Assim um dia livre pode receber
+  uma caminhada sem criar uma sessão de academia vazia.
 - **Gráficos próprios**: SVG sem biblioteca, para controlar a tipografia e o tema
   claro/escuro sem Fight dark mode.
 
@@ -193,7 +201,7 @@ prisma/
 
 ## Responsividade
 
-- **Mobile-first**: barra de navegação inferior com 5 destinos, drawer para o menu completo.
+- **Mobile-first**: barra de navegação inferior com 6 destinos, drawer para o menu completo.
 - **Tablet/desktop**: sidebar fixa de 64 colunas com a sequência atual no rodapé.
 - **Formulários densos viram cartões** em telas pequenas (séries, medidas, macros).
 - Alvos de toque de no mínimo 40px, `safe-area-inset` para notch, `dvh` para barras de

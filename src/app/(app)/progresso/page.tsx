@@ -584,25 +584,25 @@ export default async function ProgressPage() {
         </CardContent>
       </Card>
 
-      {/* Insights do coach */}
+      {/* Análises do treino */}
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <div>
-            <CardTitle>Insights do coach</CardTitle>
+            <CardTitle>Análises do seu treino</CardTitle>
             <CardDescription>
-              Análise do seu histórico, com base em regras explicáveis.
+              Leitura do seu histórico, com base em regras explicáveis.
             </CardDescription>
           </div>
           <Badge variant="brand" className="text-xs">
             <Sparkles className="size-3" />
-            {insights.length} insights
+            {insights.length} {insights.length === 1 ? "análise" : "análises"}
           </Badge>
         </CardHeader>
         <CardContent className="space-y-2.5">
           {insights.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Ainda não há dados suficientes para gerar insights. Complete alguns treinos
-              para o coach passar a analisar volume, progressão e carga.
+              Ainda não há dados suficientes para gerar análises. Complete alguns treinos
+              para a orientação analisar volume, progressão e carga.
             </p>
           ) : (
             insights.map((insight) => {

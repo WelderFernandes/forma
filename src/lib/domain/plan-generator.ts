@@ -121,7 +121,7 @@ function buildFullBody(input: PlanInput): PlanSlot[] {
     : ["band", "none"];
 
   return [
-    slot("compound-1", "Movimento compound principal", "coxa", {
+    slot("compound-1", "Movimento composto principal", "coxa", {
       equipmentPreference: compound,
       sets: s,
       reps: repsFor(input.goal, "coxa"),
@@ -188,7 +188,7 @@ function buildUpperLower(input: PlanInput): PlanSlot[][] {
     : ["band", "none"];
 
   const upper: PlanSlot[] = [
-    slot("u-push-1", "Empurrar — compound", "peito", {
+    slot("u-push-1", "Empurrar — composto", "peito", {
       equipmentPreference: pushEquip,
       sets: s,
       reps: repsFor(input.goal, "peito"),
@@ -196,7 +196,7 @@ function buildUpperLower(input: PlanInput): PlanSlot[][] {
       rpe: r,
       tempo: "2-0-2",
     }),
-    slot("u-pull-1", "Puxar — compound", "costas", {
+    slot("u-pull-1", "Puxar — composto", "costas", {
       equipmentPreference: pullEquip,
       sets: s,
       reps: repsFor(input.goal, "costas"),
@@ -238,7 +238,7 @@ function buildUpperLower(input: PlanInput): PlanSlot[][] {
   ];
 
   const lower: PlanSlot[] = [
-    slot("l-squat", "Agachamento — compound", "coxa", {
+    slot("l-squat", "Agachamento — composto", "coxa", {
       equipmentPreference: legEquip,
       sets: s,
       reps: repsFor(input.goal, "coxa"),
@@ -507,14 +507,14 @@ export function generatePlan(input: PlanInput): GeneratedPlan {
     split = "ppl";
     const ppl = buildPpl(input);
     blocks = [
-      { key: "push", label: "Push — Empurrar", slots: ppl[0] },
-      { key: "pull", label: "Pull — Puxar", slots: ppl[1] },
-      { key: "legs", label: "Legs — Pernas", slots: ppl[2] },
+      { key: "push", label: "Empurrar (push)", slots: ppl[0] },
+      { key: "pull", label: "Puxar (pull)", slots: ppl[1] },
+      { key: "legs", label: "Pernas (legs)", slots: ppl[2] },
     ];
-    name = "Plano Push / Pull / Legs";
+    name = "Plano Empurrar / Puxar / Pernas";
     description = `Divisão de ${days} dias focando cada grupo muscular 2x por semana.`;
     rationale =
-      "PPL permite 2 frequência por grupo muscular — o sweet spot entre recuperação e estímulo.";
+      "A divisão empurrar/puxar/pernas permite treinar cada grupo duas vezes por semana — o equilíbrio entre recuperação e estímulo.";
   } else if (days >= 3) {
     split = "upper_lower";
     const ul = buildUpperLower(input);
@@ -523,7 +523,7 @@ export function generatePlan(input: PlanInput): GeneratedPlan {
       { key: "lower", label: "Inferior", slots: ul[1] },
     ];
     name = "Plano Superior / Inferior";
-    description = `Divisão de ${days} dias: superior e inferior alternados, com foco em movimentos compound.`;
+    description = `Divisão de ${days} dias: superior e inferior alternados, com foco em movimentos compostos.`;
     rationale =
       "Alternar superior/inferior reduz a fadiga acumulada e distribui melhor a carga por grupo muscular.";
   } else {

@@ -9,6 +9,7 @@ import {
   Brain,
   Calculator,
   Dumbbell,
+  Footprints,
   LayoutGrid,
   Salad,
   Scale,
@@ -30,6 +31,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/painel", label: "Painel", icon: LayoutGrid },
       { href: "/treinos", label: "Treinos", icon: Dumbbell },
+      { href: "/cardio", label: "Cardio", icon: Footprints },
       { href: "/exercicios", label: "Exercícios", icon: BookOpen },
     ],
   },
@@ -57,12 +59,15 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const MOBILE_NAV_ITEMS: NavItem[] = [
-  NAV_ITEMS[0],
-  NAV_ITEMS[1],
-  NAV_ITEMS[2],
-  NAV_ITEMS[3],
-  NAV_ITEMS[5],
-];
+  "/painel",
+  "/treinos",
+  "/cardio",
+  "/exercicios",
+  "/progresso",
+  "/nutricao",
+]
+  .map((href) => NAV_ITEMS.find((item) => item.href === href))
+  .filter((item): item is NavItem => Boolean(item));
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);

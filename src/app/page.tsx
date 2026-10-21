@@ -66,7 +66,7 @@ const TOOLS = [
   {
     icon: HeartPulse,
     title: "Rotina que cabe",
-    body: "Escolha 2 a 6 dias e 20 a 60 minutos. O plano se adapta ao seu tempo real.",
+    body: "Escolha 2 a 6 dias de treino e encaixe caminhadas ou corridas até nos dias livres.",
   },
   {
     icon: Trophy,
@@ -75,8 +75,8 @@ const TOOLS = [
   },
   {
     icon: Brain,
-    title: "Coach sem achismo",
-    body: "Insights baseados no seu histórico: volume, fadiga, estagnação e deload.",
+    title: "Orientação sem achismo",
+    body: "Análises do seu histórico: volume, fadiga, estagnação e semanas de alívio (deload).",
   },
 ];
 
@@ -94,12 +94,12 @@ const ONBOARDING_STEPS = [
   {
     n: "03",
     title: "Sua rotina",
-    body: "Dias por semana, duração da sessão e quanto você já se move.",
+    body: "Dias da semana, duração da sessão e quanto você já se move.",
   },
   {
     n: "04",
     title: "Seu plano",
-    body: "Divisão, exercícios, séries e metas nutricionais prontos para começar.",
+    body: "Divisão, exercícios, metas e uma agenda com espaço para cardio ao ar livre.",
   },
 ];
 
@@ -232,7 +232,7 @@ export default async function LandingPage() {
                   <Check className="size-3.5 text-lime" /> 3 minutos
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Check className="size-3.5 text-lime" /> 11 perguntas
+                  <Check className="size-3.5 text-lime" /> 12 perguntas
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Check className="size-3.5 text-lime" /> grátis para começar
@@ -436,7 +436,7 @@ export default async function LandingPage() {
             <div>
               <p className="eyebrow text-lime">Seu plano em 3 minutos</p>
               <h2 className="display-section mt-4 text-[clamp(2.6rem,5.2vw,4.6rem)]">
-                Onze perguntas.
+                Doze perguntas.
                 <br />
                 <em className="text-lime">Um plano que é seu.</em>
               </h2>

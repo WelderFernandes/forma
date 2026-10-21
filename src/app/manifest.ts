@@ -30,6 +30,7 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       { name: "Painel", url: "/painel" },
       { name: "Treinar agora", url: "/treinos" },
+      { name: "Cardio ao ar livre", url: "/cardio" },
       { name: "Progresso", url: "/progresso" },
       { name: "Registrar refeição", url: "/nutricao" },
     ],

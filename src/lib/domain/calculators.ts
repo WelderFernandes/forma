@@ -182,7 +182,7 @@ export function adjustCalories(
         calories: Math.round(tdee - 150),
         label: "Déficit leve",
         rationale:
-          "Déficit pequeno preserva a performance no treino enquanto o corpo troca gordura por músculo.",
+          "Déficit pequeno preserva o desempenho no treino enquanto o corpo troca gordura por músculo.",
       };
     case "endurance":
       return {
@@ -197,7 +197,7 @@ export function adjustCalories(
         delta: 0,
         calories: Math.round(tdee),
         label: "Manutenção",
-        rationale: "Manutenção do gasto basal. Ajuste conforme o peso e a performance no treino.",
+        rationale: "Manutenção do gasto basal. Ajuste conforme o peso e o desempenho no treino.",
       };
   }
 }

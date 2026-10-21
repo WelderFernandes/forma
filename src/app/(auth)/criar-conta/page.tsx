@@ -22,7 +22,7 @@ export default async function SignUpPage() {
           <em className="text-brand">no seu tempo.</em>
         </h1>
         <p className="mt-3 text-[14px] leading-relaxed text-muted">
-          Crie sua conta e responda 11 perguntas. Seu plano fica pronto em cerca
+          Crie sua conta e responda 12 perguntas. Seu plano fica pronto em cerca
           de 3 minutos.
         </p>
       </div>

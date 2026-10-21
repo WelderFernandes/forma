@@ -9,6 +9,7 @@ import {
   CalendarDays,
   Dumbbell,
   Flame,
+  Footprints,
   Sparkles,
   Target,
   Timer,
@@ -29,6 +30,7 @@ import { BarChart, LineChart, RadarChart } from "@/components/charts";
 import { getCurrentUser } from "@/server/auth-helpers";
 import {
   getBodyMetrics,
+  getCardioSessions,
   getProfile,
   getSessions,
   getTemplates,
@@ -42,7 +44,15 @@ import {
 } from "@/lib/domain/insights";
 import { calculateOneRepMax } from "@/lib/domain/calculators";
 import { GOAL_LABELS, type Goal } from "@/lib/domain/types";
-import { daysBetween, formatLongDate, formatNumber } from "@/lib/utils";
+import {
+  formatTrainingDays,
+  isoWeekday,
+  nextTrainingDate,
+  normalizeTrainingDays,
+  startOfWeek,
+  weekdayLabel,
+} from "@/lib/domain/schedule";
+import { daysBetween, dayKey, formatLongDate, formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Painel",
@@ -75,12 +85,25 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [profile, templates, sessions, bodyMetrics] = await Promise.all([
-    getProfile(user.id),
-    getTemplates(user.id),
-    getSessions(user.id, 90),
-    getBodyMetrics(user.id, 60),
-  ]);
+  const weekStart = startOfWeek(new Date());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  const [profile, templates, sessions, bodyMetrics, cardioWeek] =
+    await Promise.all([
+      getProfile(user.id),
+      getTemplates(user.id),
+      getSessions(user.id, 90),
+      getBodyMetrics(user.id, 60),
+      getCardioSessions(user.id, { from: weekStart, to: weekEnd }),
+    ]);
+
+  const trainingDays = normalizeTrainingDays(
+    profile?.trainingDays,
+    profile?.daysPerWeek ?? 3,
+  );
+  const todayTraining = trainingDays.includes(isoWeekday(new Date()));
+  const nextTraining = nextTrainingDate(trainingDays);
 
   const summaries = sessions.map((s) => ({
     id: s.id,
@@ -189,21 +212,35 @@ export default async function DashboardPage() {
   // Semana atual — segunda a domingo.
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const monday = weekStart;
   const week = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + i);
+    const key = dayKey(date);
     const isToday = date.getTime() === today.getTime();
     const trained = completed.some((s) => {
       const started = new Date(s.startedAt);
       started.setHours(0, 0, 0, 0);
       return started.getTime() === date.getTime();
     });
-    return { date, label: WEEK_LABELS[i], isToday, trained };
+    const cardio = cardioWeek.filter((entry) => dayKey(entry.date) === key);
+    const cardioDone = cardio.some((entry) => entry.status === "completed");
+    const planned = trainingDays.includes(isoWeekday(date));
+    return {
+      date,
+      label: WEEK_LABELS[i],
+      isToday,
+      trained,
+      planned,
+      cardio,
+      cardioDone,
+    };
   });
 
-  const targetDays = profile?.daysPerWeek ?? 3;
+  const targetDays = trainingDays.length;
+  const cardioWeekCount = cardioWeek.filter(
+    (entry) => entry.status === "completed",
+  ).length;
 
   return (
     <div className="space-y-7">
@@ -217,13 +254,19 @@ export default async function DashboardPage() {
             {greeting}, {user.name.split(" ")[0]}.
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {profile?.goal && (
             <Badge variant="brand" className="px-3 py-1.5">
               <Target className="size-3" />
               {GOAL_LABELS[profile.goal as Goal] ?? profile.goal}
             </Badge>
           )}
+          <Button asChild variant="outline" size="sm">
+            <Link href="/cardio">
+              <Footprints className="size-3.5" />
+              Cardio
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/progresso">
               Ver progresso
@@ -239,10 +282,18 @@ export default async function DashboardPage() {
           <div className="relative z-10 flex flex-col justify-between gap-8 p-6 sm:p-8 lg:p-9">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="eyebrow text-lime">Próximo treino</span>
+                <span className="eyebrow text-lime">
+                  {todayTraining ? "Treino de hoje" : "Próximo treino"}
+                </span>
                 <span className="h-px w-8 bg-white/20" />
                 <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-cream/35">
-                  {suggested ? "Plano ativo" : "Comece aqui"}
+                  {suggested
+                    ? todayTraining
+                      ? "Plano ativo · hoje"
+                      : nextTraining
+                        ? `Plano ativo · ${weekdayLabel(isoWeekday(nextTraining))}`
+                        : "Plano ativo"
+                    : "Comece aqui"}
                 </span>
               </div>
 
@@ -264,6 +315,12 @@ export default async function DashboardPage() {
                   <Timer className="size-3.5 text-lime" />
                   {suggested ? `~${suggested.estMinutes} min` : "3 min para montar"}
                 </span>
+                {trainingDays.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 text-[11px] text-cream/55">
+                    <CalendarDays className="size-3.5 text-lime" />
+                    {formatTrainingDays(trainingDays)}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -369,12 +426,12 @@ export default async function DashboardPage() {
             <div>
               <p className="eyebrow text-muted">Leitura do seu histórico</p>
               <CardTitle className="mt-2 font-display text-[28px] font-normal">
-                Coach
+                Orientação
               </CardTitle>
             </div>
             <Badge variant="outline">
               <Sparkles className="size-3" />
-              {insights.length} insights
+              {insights.length} {insights.length === 1 ? "análise" : "análises"}
             </Badge>
           </CardHeader>
           <CardContent className="space-y-2.5">
@@ -382,7 +439,7 @@ export default async function DashboardPage() {
               <EmptyState
                 icon={Activity}
                 title="Ainda sem dados suficientes"
-                description="Registre o primeiro treino para o coach analisar volume, progressão e carga."
+                description="Registre o primeiro treino para a orientação analisar volume, progressão e carga."
                 action={
                   <Button asChild variant="brand" size="sm">
                     <Link href="/treinos">Treinar agora</Link>
@@ -448,12 +505,27 @@ export default async function DashboardPage() {
               {week.map((day) => (
                 <div
                   key={day.label}
+                  title={
+                    [
+                      day.planned ? "Treino planejado" : "Descanso",
+                      day.trained ? "Treino concluído" : null,
+                      day.cardio.length > 0
+                        ? `${day.cardio.length} cardio(s)`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
+                  }
                   className={`flex flex-col items-center gap-2 rounded-xl border py-2.5 ${
                     day.trained
                       ? "border-lime bg-lime text-lime-ink"
                       : day.isToday
-                        ? "border-foreground/25 bg-surface text-foreground"
-                        : "border-border-soft bg-surface/50 text-muted"
+                        ? "border-foreground/30 bg-surface-warm/70 text-foreground"
+                        : day.planned
+                          ? "border-brand/30 bg-brand-soft/40 text-brand"
+                          : day.cardioDone
+                            ? "border-clay/35 bg-clay/10 text-clay"
+                            : "border-border-soft bg-surface/50 text-muted"
                   }`}
                 >
                   <span className="text-[9px] font-semibold uppercase tracking-[0.06em]">
@@ -468,8 +540,37 @@ export default async function DashboardPage() {
                   >
                     {day.date.getDate()}
                   </span>
+                  <span className="flex h-1.5 items-center gap-1">
+                    {(day.planned || day.trained) && (
+                      <span
+                        className={`size-1.5 rounded-full ${
+                          day.trained ? "bg-lime-ink/55" : "bg-current opacity-70"
+                        }`}
+                      />
+                    )}
+                    {day.cardio.length > 0 && (
+                      <span
+                        className={`size-1.5 rounded-full bg-clay ${
+                          day.cardioDone ? "opacity-100" : "opacity-45"
+                        }`}
+                      />
+                    )}
+                  </span>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[9.5px] text-muted">
+              <span className="inline-flex items-center gap-1">
+                <span className="size-1.5 rounded-full bg-brand" /> treino
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="size-1.5 rounded-full bg-clay" /> cardio
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <CalendarDays className="size-2.5" />{" "}
+                {formatTrainingDays(trainingDays)}
+              </span>
             </div>
 
             <div className="mt-5 space-y-3 border-t border-border-soft pt-4">
@@ -492,14 +593,28 @@ export default async function DashboardPage() {
                   ? "Meta da semana concluída. O descanso também faz parte do plano."
                   : `Faltam ${Math.max(0, targetDays - sessionsThisWeek)} treino(s) para fechar a semana.`}
               </p>
+              <p className="flex items-center gap-1.5 text-[11px] text-muted">
+                <Footprints className="size-3.5 text-clay" />
+                {cardioWeekCount > 0
+                  ? `${cardioWeekCount} cardio${cardioWeekCount > 1 ? "s" : ""} concluído${cardioWeekCount > 1 ? "s" : ""} nesta semana`
+                  : "Dias livres também podem receber um cardio leve."}
+              </p>
             </div>
 
-            <Button asChild variant="outline" size="sm" className="mt-4 w-full">
-              <Link href="/progresso">
-                Ver histórico
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/progresso">
+                  Ver histórico
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </Button>
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/cardio">
+                  <Footprints className="size-3.5" />
+                  Cardio
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

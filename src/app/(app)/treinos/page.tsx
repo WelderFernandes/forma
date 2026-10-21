@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   CalendarDays,
   Dumbbell,
+  Footprints,
   History,
   Layers,
   Plus,
@@ -17,8 +18,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StartWorkoutButton } from "@/components/start-workout-button";
 import { getCurrentUser } from "@/server/auth-helpers";
-import { getSessions, getTemplates } from "@/server/queries";
+import { getProfile, getSessions, getTemplates } from "@/server/queries";
 import { EQUIPMENT_LABELS, SPLIT_LABELS, type Split } from "@/lib/domain/types";
+import {
+  WEEKDAYS,
+  formatTrainingDays,
+  normalizeTrainingDays,
+} from "@/lib/domain/schedule";
 import { formatDate, formatDuration } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -29,14 +35,19 @@ export default async function WorkoutsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [templates, sessions] = await Promise.all([
+  const [templates, sessions, profile] = await Promise.all([
     getTemplates(user.id),
     getSessions(user.id, 40),
+    getProfile(user.id),
   ]);
 
   const mine = templates.filter((t) => !t.isSystem);
   const system = templates.filter((t) => t.isSystem);
   const completed = sessions.filter((s) => s.status === "completed");
+  const trainingDays = normalizeTrainingDays(
+    profile?.trainingDays,
+    profile?.daysPerWeek ?? 3,
+  );
 
   return (
     <div className="space-y-6">
@@ -57,6 +68,56 @@ export default async function WorkoutsPage() {
           </Button>
         }
       />
+
+      <Card hoverable={false} className="bg-surface/55">
+        <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+              <CalendarDays className="size-4" />
+            </span>
+            <div>
+              <p className="eyebrow text-muted">Sua agenda</p>
+              <p className="mt-1 text-[13px] font-medium">
+                {trainingDays.length}x por semana ·{" "}
+                {formatTrainingDays(trainingDays)}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid flex-1 grid-cols-7 gap-1">
+            {WEEKDAYS.map((day) => {
+              const active = trainingDays.includes(day.value);
+              return (
+                <div
+                  key={day.value}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border py-2 ${
+                    active
+                      ? "border-brand/30 bg-brand-soft/50 text-brand"
+                      : "border-border-soft bg-surface/45 text-muted"
+                  }`}
+                  title={`${day.full}: ${active ? "treino" : "descanso"}`}
+                >
+                  <span className="text-[8.5px] font-semibold uppercase tracking-[0.06em]">
+                    {day.short}
+                  </span>
+                  <span
+                    className={`size-1.5 rounded-full ${
+                      active ? "bg-brand" : "bg-foreground/15"
+                    }`}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <Button asChild variant="outline" size="sm" className="shrink-0">
+            <Link href="/cardio">
+              <Footprints className="size-3.5" />
+              Cardio nos dias livres
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue={mine.length > 0 ? "minhas" : "modelos"}>
         <TabsList className="w-full justify-start overflow-x-auto sm:w-auto">

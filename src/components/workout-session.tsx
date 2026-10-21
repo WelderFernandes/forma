@@ -149,7 +149,7 @@ export function WorkoutSession({
       const result = await updateSet(setId, patch);
       if (result.isPr) {
         toast.success("Novo recorde pessoal! 🎉", {
-          description: "O coach registrou sua marca.",
+          description: "A orientação registrou sua marca.",
         });
       }
     } catch {

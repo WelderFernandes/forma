@@ -86,6 +86,7 @@ async function main() {
     "/painel",
     "/treinos",
     "/treinos/novo",
+    "/cardio",
     "/exercicios",
     "/exercicios/flexao-de-barra",
     "/progresso",
@@ -137,6 +138,7 @@ async function main() {
       level: "intermediate",
       equipment: ["none", "dumbbell", "band"],
       daysPerWeek: 4,
+      trainingDays: [1, 2, 4, 5],
       sessionMinutes: 45,
       focusAreas: ["costas", "quadril"],
       lowImpact: false,
@@ -163,7 +165,22 @@ async function main() {
     `status ${panel.status}`,
   );
 
-  // ── 7. Rotas públicas de metadata ──
+  // ── 7. Agenda de cardio com perfil completo ──
+  const cardioPage = await fetch(`${BASE}/cardio`, {
+    headers: { Cookie: cookies },
+    redirect: "manual",
+  });
+  const cardioText = await cardioPage.text();
+  record(
+    "Agenda de cardio renderiza",
+    cardioPage.status === 200 &&
+      cardioText.includes("Cardio ao ar livre") &&
+      cardioText.includes("Sua semana") &&
+      !/Unhandled Runtime Error|Internal Server Error/i.test(cardioText),
+    `status ${cardioPage.status}`,
+  );
+
+  // ── 8. Rotas públicas de metadata ──
   for (const meta of ["/robots.txt", "/sitemap.xml", "/manifest.webmanifest"]) {
     try {
       const res = await fetch(`${BASE}${meta}`);

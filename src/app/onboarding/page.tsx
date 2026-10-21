@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Monte seu plano",
   description:
-    "Responda 11 perguntas sobre objetivo, corpo e rotina e receba um plano de treino e metas nutricionais sob medida.",
+    "Responda 12 perguntas sobre objetivo, corpo, rotina e agenda e receba um plano de treino e metas nutricionais sob medida.",
 };
 
 export default async function OnboardingPage() {

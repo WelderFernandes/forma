@@ -54,6 +54,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${instrument.variable}`}
     >
       <body className="min-h-dvh bg-canvas antialiased">

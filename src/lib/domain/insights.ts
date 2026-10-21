@@ -314,7 +314,7 @@ export function buildInsights(input: InsightInput): Insight[] {
         tone: "danger",
         category: "Recuperação",
         title: "Sinal de excesso de esforço",
-        body: `Seu RPE médio está em ${rpe.toFixed(1)} (escala 1-10). Treinos acima de 9 por vários dias indicam fadiga acumulada — faça uma semana de deload agora e durma mais.`,
+        body: `Seu RPE médio está em ${rpe.toFixed(1)} (escala 1-10). Treinos acima de 9 por vários dias indicam fadiga acumulada — faça uma semana de alívio (deload) agora e durma mais.`,
         metric: `RPE ${rpe.toFixed(1)}`,
       });
     } else if (rpe > 0 && rpe <= 5) {
@@ -354,7 +354,7 @@ export function buildInsights(input: InsightInput): Insight[] {
       tone: "warning",
       category: "Progressão",
       title: `${worst.exerciseName} parou de subir`,
-      body: `O 1RM estimado caiu de ${worst.previous} kg para ${worst.current} kg. Possíveis causas: fadiga, sono, técnica ou deload necessário.`,
+      body: `O 1RM estimado caiu de ${worst.previous} kg para ${worst.current} kg. Possíveis causas: fadiga, sono, técnica ou necessidade de uma semana de alívio (deload).`,
       action: { label: "Ver histórico", href: "/progresso" },
       metric: `${worst.deltaPct}%`,
     });
@@ -386,7 +386,7 @@ export function buildInsights(input: InsightInput): Insight[] {
         tone: "danger",
         category: "Peso",
         title: "Déficit muito agressivo",
-        body: `Perdendo ${Math.abs(perWeek).toFixed(2)} kg por semana. Abaixo de ~1% do peso corporal você perde músculo e performance. Aumente a intake em 150–200 kcal.`,
+        body: `Perdendo ${Math.abs(perWeek).toFixed(2)} kg por semana. Abaixo de ~1% do peso corporal você perde músculo e desempenho. Aumente a ingestão em 150–200 kcal.`,
         metric: `${perWeek.toFixed(2)} kg/sem`,
       });
     } else if (goal === "build_muscle" && perWeek > 0.5) {

@@ -9,6 +9,8 @@ import { getCurrentUser } from "@/server/auth-helpers";
 import { getProfile } from "@/server/queries";
 import { ProfileForm } from "@/components/configuracoes/profile-form";
 import { SignOutButton } from "@/components/configuracoes/sign-out-button";
+import { normalizeTrainingDays } from "@/lib/domain/schedule";
+import type { ActivityLevel } from "@/lib/domain/types";
 
 export const metadata: Metadata = {
   title: "Configurações",
@@ -45,7 +47,12 @@ export default async function SettingsPage() {
           weightKg: profile?.weightKg ?? null,
           goal: profile?.goal ?? null,
           level: profile?.level ?? null,
+          activity: (profile?.activity ?? "moderate") as ActivityLevel,
           daysPerWeek: profile?.daysPerWeek ?? 3,
+          trainingDays: normalizeTrainingDays(
+            profile?.trainingDays,
+            profile?.daysPerWeek ?? 3,
+          ),
           sessionMinutes: profile?.sessionMinutes ?? 30,
           equipment: profile?.equipment ?? [],
           focusAreas: profile?.focusAreas ?? [],

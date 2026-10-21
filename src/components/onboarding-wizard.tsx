@@ -45,6 +45,7 @@ import {
   fitTrainingDays,
   formatTrainingDays,
 } from "@/lib/domain/schedule";
+import { SPLIT_LABELS, type Split } from "@/lib/domain/types";
 
 /* ───────────────────────────── Tipos e constantes ───────────────────────────── */
 
@@ -496,6 +497,7 @@ export function OnboardingWizard({ name }: { name: string }) {
           | "advanced",
         equipment: draft.equipment,
         daysPerWeek: draft.daysPerWeek,
+        trainingDays: draft.trainingDays,
         sessionMinutes: draft.sessionMinutes,
         focusAreas: draft.focusAreas,
         lowImpact: draft.lowImpact,
@@ -539,7 +541,7 @@ export function OnboardingWizard({ name }: { name: string }) {
           void loadPreview();
         }}
         onFinish={finish}
-        onBack={() => goTo(11)}
+        onBack={() => goTo(12)}
       />
     );
   }
@@ -850,7 +852,7 @@ export function OnboardingWizard({ name }: { name: string }) {
                       <button
                         key={days}
                         type="button"
-                        onClick={() => choose("daysPerWeek", days)}
+                        onClick={() => chooseDays(days)}
                         aria-pressed={draft.daysPerWeek === days}
                         className={cn(
                           "flex flex-col items-center justify-center rounded-2xl border py-4 transition-all duration-200",
@@ -882,6 +884,91 @@ export function OnboardingWizard({ name }: { name: string }) {
               )}
 
               {step === 9 && (
+                <StepShell
+                  eyebrow="Agenda"
+                  title={
+                    <>
+                      Quais dias
+                      <br />
+                      <em className="text-lime">funcionam para você?</em>
+                    </>
+                  }
+                  hint={`Você escolheu ${draft.daysPerWeek} dias por semana. Marque exatamente esses dias — o restante fica livre, inclusive para um cardio leve.`}
+                >
+                  <div className="mt-7 grid grid-cols-7 gap-1.5 sm:gap-2">
+                    {WEEKDAYS.map((day) => {
+                      const selected = draft.trainingDays.includes(day.value);
+                      const atLimit =
+                        draft.trainingDays.length >= draft.daysPerWeek;
+                      return (
+                        <button
+                          key={day.value}
+                          type="button"
+                          onClick={() => toggleTrainingDay(day.value)}
+                          aria-pressed={selected}
+                          aria-label={day.full}
+                          disabled={!selected && atLimit}
+                          className={cn(
+                            "flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-2xl border px-1 py-3 transition-all duration-200",
+                            selected
+                              ? "border-lime bg-lime text-lime-ink"
+                              : atLimit
+                                ? "cursor-not-allowed border-white/[0.06] text-cream/20"
+                                : "border-white/10 bg-white/[0.035] text-cream/70 hover:border-white/30 hover:bg-white/[0.06] hover:text-cream",
+                          )}
+                        >
+                          <span className="text-[9px] font-semibold uppercase tracking-[0.08em]">
+                            {day.short}
+                          </span>
+                          <span
+                            className={cn(
+                              "grid size-5 place-items-center rounded-full border",
+                              selected
+                                ? "border-lime-ink/20 bg-lime-ink/10"
+                                : "border-current/25",
+                            )}
+                          >
+                            {selected ? (
+                              <Check className="size-3" strokeWidth={3} />
+                            ) : (
+                              <span className="size-1 rounded-full bg-current" />
+                            )}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3.5">
+                    <div>
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-cream/30">
+                        Seu plano semanal
+                      </p>
+                      <p className="mt-1 text-[13px] font-medium text-cream">
+                        {formatTrainingDays(draft.trainingDays, "full")}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]",
+                        draft.trainingDays.length === draft.daysPerWeek
+                          ? "border-lime/25 bg-lime/10 text-lime"
+                          : "border-white/10 text-cream/35",
+                      )}
+                    >
+                      {draft.trainingDays.length}/{draft.daysPerWeek} dias
+                    </span>
+                  </div>
+
+                  <p className="mt-4 flex items-start gap-2 text-[11.5px] leading-relaxed text-cream/35">
+                    <Sparkles className="mt-0.5 size-3.5 shrink-0 text-lime/70" />
+                    Caminhadas e corridas podem ser adicionadas depois nos dias
+                    livres, sem ocupar o lugar do treino de força.
+                  </p>
+                </StepShell>
+              )}
+
+              {step === 10 && (
                 <StepShell
                   eyebrow="Duração"
                   title={
@@ -935,7 +1022,7 @@ export function OnboardingWizard({ name }: { name: string }) {
                 </StepShell>
               )}
 
-              {step === 10 && (
+              {step === 11 && (
                 <StepShell
                   eyebrow="Equipamento"
                   title={
@@ -990,7 +1077,7 @@ export function OnboardingWizard({ name }: { name: string }) {
                 </StepShell>
               )}
 
-              {step === 11 && (
+              {step === 12 && (
                 <StepShell
                   eyebrow="Prioridades"
                   title={
@@ -1141,6 +1228,32 @@ export function OnboardingWizard({ name }: { name: string }) {
     });
     setPreview(null);
   }
+
+  function chooseDays(days: number) {
+    setDraft((prev) => ({
+      ...prev,
+      daysPerWeek: days,
+      trainingDays: fitTrainingDays(prev.trainingDays, days),
+    }));
+    setPreview(null);
+    scheduleNext();
+  }
+
+  function toggleTrainingDay(day: number) {
+    setDraft((prev) => {
+      if (prev.trainingDays.includes(day)) {
+        return {
+          ...prev,
+          trainingDays: prev.trainingDays.filter((item) => item !== day),
+        };
+      }
+      if (prev.trainingDays.length >= prev.daysPerWeek) return prev;
+      return {
+        ...prev,
+        trainingDays: [...prev.trainingDays, day].sort((a, b) => a - b),
+      };
+    });
+  }
 }
 
 /* ───────────────────────────── Blocos de UI ───────────────────────────── */
@@ -1162,13 +1275,13 @@ function WelcomeStep({ firstName }: { firstName: string }) {
       </h1>
 
       <p className="mt-6 max-w-md text-[15px] leading-relaxed text-cream/55">
-        Olá, {firstName}. Em 3 minutos e 11 perguntas, você sai daqui com um
+        Olá, {firstName}. Em 3 minutos e 12 perguntas, você sai daqui com um
         treino que considera seu corpo, seu tempo e a sua rotina.
       </p>
 
       <div className="mt-8 grid grid-cols-3 gap-2 border-y border-white/10 py-5">
         {[
-          { value: "11", label: "perguntas" },
+          { value: "12", label: "perguntas" },
           { value: "3", label: "minutos" },
           { value: "100%", label: "personalizado" },
         ].map((item) => (
@@ -1621,7 +1734,8 @@ function ResultScreen({
               <div className="mt-7 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11px] text-cream/60">
                   <CalendarDays className="size-3.5 text-lime" />
-                  {preview.daysPerWeek} treinos por semana
+                  {preview.daysPerWeek} treinos ·{" "}
+                  {formatTrainingDays(draft.trainingDays)}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[11px] text-cream/60">
                   <Timer className="size-3.5 text-lime" />~{preview.estMinutes} min
@@ -1683,37 +1797,35 @@ function ResultScreen({
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-cream/35">
                     Sua primeira semana
                   </p>
-                  <p className="text-[10px] text-cream/30">3 dias de descanso</p>
+                  <p className="text-[10px] text-cream/30">
+                    {7 - draft.trainingDays.length} dias de descanso
+                  </p>
                 </div>
                 <div className="mt-3 grid grid-cols-7 gap-1.5">
-                  {["seg", "ter", "qua", "qui", "sex", "sáb", "dom"].map(
-                    (day, index) => {
-                      const active = trainingDays(
-                        preview.daysPerWeek,
-                      ).includes(index);
-                      return (
-                        <div
-                          key={day}
+                  {WEEKDAYS.map((day) => {
+                    const active = draft.trainingDays.includes(day.value);
+                    return (
+                      <div
+                        key={day.value}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 rounded-xl border py-2.5",
+                          active
+                            ? "border-lime/30 bg-lime/[0.1] text-lime"
+                            : "border-white/[0.06] text-cream/25",
+                        )}
+                      >
+                        <span className="text-[9px] font-medium uppercase tracking-[0.06em]">
+                          {day.short}
+                        </span>
+                        <span
                           className={cn(
-                            "flex flex-col items-center gap-1.5 rounded-xl border py-2.5",
-                            active
-                              ? "border-lime/30 bg-lime/[0.1] text-lime"
-                              : "border-white/[0.06] text-cream/25",
+                            "size-1.5 rounded-full",
+                            active ? "bg-lime" : "bg-white/15",
                           )}
-                        >
-                          <span className="text-[9px] font-medium uppercase tracking-[0.06em]">
-                            {day}
-                          </span>
-                          <span
-                            className={cn(
-                              "size-1.5 rounded-full",
-                              active ? "bg-lime" : "bg-white/15",
-                            )}
-                          />
-                        </div>
-                      );
-                    },
-                  )}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1746,7 +1858,7 @@ function ResultScreen({
                   </p>
                 </div>
                 <span className="rounded-full border border-white/12 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-cream/40">
-                  {preview.split}
+                  {SPLIT_LABELS[preview.split as Split] ?? preview.split}
                 </span>
               </div>
 

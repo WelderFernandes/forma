@@ -153,8 +153,8 @@ export type Split = (typeof SPLITS)[number];
 export const SPLIT_LABELS: Record<Split, string> = {
   full_body: "Corpo inteiro",
   upper_lower: "Superior / Inferior",
-  ppl: "Push / Pull / Legs",
-  abc: "ABC (Upper/Lower/Core)",
+  ppl: "Empurrar / Puxar / Pernas",
+  abc: "ABC (superior, inferior e core)",
   cardio: "Cardio",
   mobility: "Mobilidade",
   custom: "Personalizado",

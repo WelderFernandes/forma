@@ -15,6 +15,11 @@ import {
 } from "@/components/ui/select";
 import { updateProfile } from "@/server/actions/profile";
 import {
+  WEEKDAYS,
+  fitTrainingDays,
+  formatTrainingDays,
+} from "@/lib/domain/schedule";
+import {
   ACTIVITY_LABELS,
   ACTIVITY_LEVELS,
   EQUIPMENT,
@@ -35,7 +40,9 @@ export type ProfileFormValues = {
   weightKg: number | null;
   goal: string | null;
   level: string | null;
+  activity: ActivityLevel;
   daysPerWeek: number;
+  trainingDays: number[];
   sessionMinutes: number;
   equipment: string[];
   focusAreas: string[];
@@ -81,11 +88,14 @@ export function ProfileForm({
   const [goal, setGoal] = React.useState<string>(initial.goal ?? "general_health");
   const [level, setLevel] = React.useState<string>(initial.level ?? "beginner");
   const [daysPerWeek, setDaysPerWeek] = React.useState(String(initial.daysPerWeek));
+  const [trainingDays, setTrainingDays] = React.useState<number[]>(
+    initial.trainingDays,
+  );
   const [sessionMinutes, setSessionMinutes] = React.useState(String(initial.sessionMinutes));
   const [equipment, setEquipment] = React.useState<string[]>(initial.equipment);
   const [focusAreas, setFocusAreas] = React.useState<string[]>(initial.focusAreas);
   const [lowImpact, setLowImpact] = React.useState(initial.lowImpact);
-  const [activity, setActivity] = React.useState<ActivityLevel>("moderate");
+  const [activity, setActivity] = React.useState<ActivityLevel>(initial.activity);
   const [waterTargetMl, setWaterTargetMl] = React.useState(String(initial.waterTargetMl));
   const [stepTarget, setStepTarget] = React.useState(String(initial.stepTarget));
   const [fastingEnabled, setFastingEnabled] = React.useState(initial.fastingEnabled);
@@ -106,6 +116,23 @@ export function ProfileForm({
 
   function toggle(list: string[], value: string, setter: (next: string[]) => void) {
     setter(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
+  }
+
+  function handleDaysPerWeekChange(value: string) {
+    setDaysPerWeek(value);
+    const parsed = Math.round(toNumber(value));
+    if (parsed >= 2 && parsed <= 6) {
+      setTrainingDays((prev) => fitTrainingDays(prev, parsed));
+    }
+  }
+
+  function toggleTrainingDay(day: number) {
+    const target = Math.round(toNumber(daysPerWeek));
+    setTrainingDays((prev) => {
+      if (prev.includes(day)) return prev.filter((item) => item !== day);
+      if (Number.isFinite(target) && prev.length >= target) return prev;
+      return [...prev, day].sort((a, b) => a - b);
+    });
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -133,6 +160,12 @@ export function ProfileForm({
       setError("Os dias por semana precisam estar entre 2 e 6.");
       return;
     }
+    if (trainingDays.length !== parsedDays) {
+      setError(
+        `Escolha exatamente ${parsedDays} dias da semana para o seu treino.`,
+      );
+      return;
+    }
     if (parsedMinutes < 10 || parsedMinutes > 120) {
       setError("Os minutos por sessão precisam estar entre 10 e 120.");
       return;
@@ -158,6 +191,7 @@ export function ProfileForm({
           goal,
           level,
           daysPerWeek: parsedDays,
+          trainingDays,
           sessionMinutes: parsedMinutes,
           equipment,
           focusAreas,
@@ -282,7 +316,7 @@ export function ProfileForm({
                 min="2"
                 max="6"
                 value={daysPerWeek}
-                onChange={(event) => setDaysPerWeek(event.target.value)}
+                onChange={(event) => handleDaysPerWeekChange(event.target.value)}
               />
             </div>
 
@@ -297,6 +331,62 @@ export function ProfileForm({
                 value={sessionMinutes}
                 onChange={(event) => setSessionMinutes(event.target.value)}
               />
+            </div>
+
+            <div className="space-y-2.5 sm:col-span-2">
+              <div className="flex items-center justify-between gap-3">
+                <Label>Dias da semana</Label>
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {trainingDays.length} de {daysPerWeek || "—"} dias
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Escolha os dias que você vai treinar. Caminhadas e corridas podem ocupar os
+                dias livres.
+              </p>
+              <div className="grid grid-cols-7 gap-1.5">
+                {WEEKDAYS.map((day) => {
+                  const selected = trainingDays.includes(day.value);
+                  const target = Math.round(toNumber(daysPerWeek));
+                  const atLimit =
+                    target >= 2 && target <= 6 && trainingDays.length >= target;
+                  return (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() => toggleTrainingDay(day.value)}
+                      aria-pressed={selected}
+                      aria-label={day.full}
+                      disabled={!selected && atLimit}
+                      className={`flex min-h-[58px] flex-col items-center justify-center gap-1.5 rounded-xl border px-1 py-2 text-[10px] font-medium transition-colors ${
+                        selected
+                          ? "border-brand bg-brand-soft text-brand"
+                          : atLimit
+                            ? "cursor-not-allowed border-border-soft text-muted/35"
+                            : "border-border text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.06em]">
+                        {day.short}
+                      </span>
+                      <span
+                        className={`grid size-4 place-items-center rounded-full border ${
+                          selected ? "border-brand/30 bg-brand text-background" : "border-current/30"
+                        }`}
+                      >
+                        {selected ? (
+                          <Check className="size-2.5" strokeWidth={3} />
+                        ) : (
+                          <span className="size-1 rounded-full bg-current" />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Agenda atual: {formatTrainingDays(trainingDays)}.
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -460,7 +550,7 @@ export function ProfileForm({
           {saved && (
             <p className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400">
               <Check className="size-4" />
-              Configurações salvas. As metas de calorias e macros foram recalculadas.
+              Configurações salvas. Sua agenda, metas de calorias e macros foram atualizadas.
             </p>
           )}
 

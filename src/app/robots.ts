@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: ["/", "/exercicios"],
-        disallow: ["/painel", "/treinos", "/progresso", "/nutricao", "/corpo", "/api/"],
+        disallow: ["/painel", "/treinos", "/cardio", "/progresso", "/nutricao", "/corpo", "/api/"],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
