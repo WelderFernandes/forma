@@ -1,5 +1,10 @@
 import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
+
+// Prisma CLI commands that touch the database need DIRECT_URL (or DATABASE_URL).
+// `prisma generate` does not, so the datasource is omitted when no URL is set.
+// This keeps production builds independent from database credentials.
+const directUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -7,9 +12,5 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "tsx prisma/seed.ts",
   },
-  datasource: {
-    // Migrations and schema operations use the direct connection.
-    // The application runtime uses DATABASE_URL through PrismaPg.
-    url: env("DIRECT_URL"),
-  },
+  ...(directUrl ? { datasource: { url: directUrl } } : {}),
 });
