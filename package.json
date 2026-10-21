@@ -25,6 +25,9 @@
     "db:musclewiki": "tsx --env-file=.env scripts/sync-musclewiki.ts",
     "smoke": "node scripts/smoke.mjs"
   },
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "dependencies": {
     "@hookform/resolvers": "3.10.0",
     "@prisma/adapter-pg": "7.10.1",
@@ -75,8 +78,5 @@
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5"
-  },
-  "engines": {
-    "node": "24.x"
   }
 }
