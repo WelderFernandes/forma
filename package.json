@@ -4,9 +4,6 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.34.7",
-  "engines": {
-    "node": "24"
-  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
@@ -27,9 +24,6 @@
     "db:import:sqlite": "node --env-file=.env scripts/migrate-sqlite-to-postgres.mjs",
     "db:musclewiki": "tsx --env-file=.env scripts/sync-musclewiki.ts",
     "smoke": "node scripts/smoke.mjs"
-  },
-  "engines": {
-    "node": "24.x"
   },
   "dependencies": {
     "@hookform/resolvers": "3.10.0",
