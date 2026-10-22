@@ -1,6 +1,14 @@
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
+  const appUrl = (
+    process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL
+  )?.replace(/\/$/, "");
+  const manifestUrl = appUrl
+    ? `${appUrl}/manifest.webmanifest`
+    : "/manifest.webmanifest";
+  const appId = appUrl ? `${appUrl}/` : "/";
+
   return {
     name: "Forma — Treino, Nutrição e Bem-estar",
     short_name: "Forma",
@@ -17,6 +25,15 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: "ltr",
     categories: ["health", "fitness", "lifestyle"],
     prefer_related_applications: false,
+    // Permite que `navigator.getInstalledRelatedApps()` identifique esta PWA
+    // quando ela já estiver instalada, inclusive se o usuário abrir pelo navegador.
+    related_applications: [
+      {
+        platform: "webapp",
+        url: manifestUrl,
+        id: appId,
+      },
+    ],
     icons: [
       {
         src: "/icons/icon-192.png",

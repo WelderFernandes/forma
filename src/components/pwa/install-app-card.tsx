@@ -20,15 +20,16 @@ import { useInstallApp } from "@/components/pwa/install-app-provider";
 
 export function InstallAppBanner() {
   const {
-    canInstall,
     dismissed,
     dismiss,
+    isChecking,
     isInAppBrowser,
     isInstalled,
+    isIOS,
     promptInstall,
   } = useInstallApp();
 
-  if (isInstalled || dismissed) return null;
+  if (isChecking || isInstalled || dismissed) return null;
 
   return (
     <Card variant="feature" className="md:hidden">
@@ -54,11 +55,11 @@ export function InstallAppBanner() {
             className="flex-1 sm:flex-none"
             onClick={() => void promptInstall()}
           >
-            {canInstall
-              ? "Instalar"
-              : isInAppBrowser
-                ? "Como abrir"
-                : "Como instalar"}
+            {isInAppBrowser
+              ? "Como abrir"
+              : isIOS
+                ? "Como instalar"
+                : "Instalar"}
           </Button>
           <Button
             variant="ghost"
@@ -78,10 +79,10 @@ export function InstallAppBanner() {
 export function InstallAppSettingsCard() {
   const {
     canInstall,
+    isChecking,
     isInAppBrowser,
     isInstalled,
     isIOS,
-    openInstructions,
     promptInstall,
   } = useInstallApp();
 
@@ -95,7 +96,11 @@ export function InstallAppSettingsCard() {
           </CardDescription>
         </div>
         <Badge variant={isInstalled ? "success" : "outline"}>
-          {isInstalled ? "Instalado" : "Instalável"}
+          {isChecking
+            ? "Verificando"
+            : isInstalled
+              ? "Instalado"
+              : "Instalável"}
         </Badge>
       </CardHeader>
 
@@ -112,33 +117,41 @@ export function InstallAppSettingsCard() {
           </span>
           <div className="space-y-1">
             <p className="text-sm font-medium">
-              {isInstalled
-                ? "Forma instalado"
-                : "Instalar na tela de início"}
+              {isChecking
+                ? "Verificando instalação"
+                : isInstalled
+                  ? "Forma instalado"
+                  : "Instalar na tela de início"}
             </p>
             <p className="text-sm text-muted-foreground">
-              {isInstalled
-                ? "Você está usando o Forma como aplicativo. Pode abrir pelo ícone na tela de início."
-                : isInAppBrowser
-                  ? "Você está em um navegador dentro de outro app. Abra no Safari ou Chrome para instalar."
-                  : "Abre em tela cheia, com o mesmo login e os mesmos dados."}
+              {isChecking
+                ? "Conferindo se o Forma já está instalado neste dispositivo."
+                : isInstalled
+                  ? "Você está usando o Forma como aplicativo. Pode abrir pelo ícone na tela de início."
+                  : isInAppBrowser
+                    ? "Você está em um navegador dentro de outro app. Abra no Safari ou Chrome para instalar."
+                    : "Abre em tela cheia, com o mesmo login e os mesmos dados."}
             </p>
           </div>
         </div>
 
-        {!isInstalled && (
+        {!isInstalled && !isChecking && (
           <div className="flex flex-wrap items-center gap-2">
-            {canInstall ? (
-              <Button variant="brand" onClick={() => void promptInstall()}>
+            <Button
+              variant={canInstall ? "brand" : "outline"}
+              onClick={() => void promptInstall()}
+            >
+              {canInstall ? (
                 <Download className="size-4" />
-                Instalar app
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={openInstructions}>
+              ) : (
                 <Smartphone className="size-4" />
-                {isIOS ? "Como instalar no iPhone" : "Como instalar"}
-              </Button>
-            )}
+              )}
+              {canInstall
+                ? "Instalar app"
+                : isIOS
+                  ? "Como instalar no iPhone"
+                  : "Instalar app"}
+            </Button>
           </div>
         )}
 

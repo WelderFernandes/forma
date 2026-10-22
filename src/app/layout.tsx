@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers";
+import { InstallPromptCapture } from "@/components/pwa/install-prompt-capture";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import "./globals.css";
 
@@ -87,6 +88,9 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${instrument.variable}`}
     >
+      <head>
+        <InstallPromptCapture />
+      </head>
       <body className="min-h-dvh bg-canvas antialiased">
         <ThemeProvider
           attribute="class"
